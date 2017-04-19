@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
+	<classpathentry kind="lib" path="/home/negar/Downloads/axml-2.0.jar"/>
+	<classpathentry kind="lib" path="/home/negar/Downloads/slf4j-api-1.7.5.jar"/>
+	<classpathentry kind="lib" path="/home/negar/Downloads/slf4j-simple-1.7.5.jar"/>
+	<classpathentry kind="lib" path="/home/negar/Downloads/soot-infoflow.jar"/>
+	<classpathentry kind="lib" path="/home/negar/Downloads/soot-infoflow-android.jar"/>
+	<classpathentry kind="lib" path="/home/negar/Downloads/soot-trunk(1).jar"/>
+	<classpathentry kind="lib" path="/home/negar/Downloads/soot-infoflow-android-javadoc.jar"/>
+	<classpathentry kind="lib" path="/home/negar/Downloads/soot-infoflow-javadoc.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
