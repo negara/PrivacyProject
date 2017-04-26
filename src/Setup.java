@@ -15,6 +15,8 @@ import java.util.Set;
 
 import org.xmlpull.v1.XmlPullParserException;
 
+import CallGraph.MyCallGraph;
+import CallGraph.NewNode;
 import soot.MethodOrMethodContext;
 import soot.PackManager;
 import soot.Scene;
@@ -24,8 +26,10 @@ import soot.jimple.Stmt;
 import soot.jimple.infoflow.android.SetupApplication;
 import soot.jimple.toolkits.callgraph.CHATransformer;
 import soot.jimple.toolkits.callgraph.CallGraph;
+import soot.jimple.toolkits.callgraph.Edge;
 import soot.jimple.toolkits.callgraph.Targets;
 import soot.options.Options;
+import soot.util.queue.QueueReader;
 
 public class Setup {
 	private String apkPath;
@@ -49,6 +53,7 @@ public class Setup {
 		this.apkPath = apkPath;
 		this.classesFile = classesFile;
 		SourceSinkPath = "SourcesAndSinks.txt";
+
 		config(androidJAR, apkPath);
 	}
 
@@ -56,7 +61,7 @@ public class Setup {
 
 		Options.v().no_bodies_for_excluded();
 		System.out.println(androidPath);
-		app = new SetupApplication("/home/negar/workspaceneon/android/android--1/android.jar", apkPath);
+		app = new SetupApplication("/Users/negar/git/android/android--1/android.jar", apkPath);
 
 		app.calculateSourcesSinksEntrypoints("SourcesAndSinks.txt");
 		soot.G.reset();
@@ -69,7 +74,7 @@ public class Setup {
 		Options.v().set_keep_line_number(true);
 		Options.v().set_keep_offset(true);
 		Options.v().set_allow_phantom_refs(true);
-		Options.v().set_output_format(Options.output_format_class);
+		Options.v().set_output_format(Options.output_format_jimple);
 		Options.v().setPhaseOption("cg.spark", "on");
 
 		List<String> stringlist = new LinkedList<String>();
@@ -80,7 +85,7 @@ public class Setup {
 		entryPoint = app.getEntryPointCreator().createDummyMain();
 		Options.v().set_main_class(entryPoint.getSignature());
 		Scene.v().setEntryPoints(Collections.singletonList(entryPoint));
-		System.out.println("dummyMain = " + entryPoint.retrieveActiveBody().toString());
+		//System.out.println("dummyMain = " + entryPoint.retrieveActiveBody().toString());
 		PackManager.v().runPacks();
 		callGraph = Scene.v().getCallGraph();
 
@@ -90,9 +95,9 @@ public class Setup {
 		String identifier = m.getName();
 		visited.add(m.getSignature());
 		System.out.println(identifier);
-		
+
 		dg.drawNode(identifier);
-		
+
 		Iterator<MethodOrMethodContext> itChilds = new Targets(callGraph.edgesOutOf(m));
 
 		if (itChilds != null) {
@@ -110,12 +115,12 @@ public class Setup {
 		Iterator<MethodOrMethodContext> itParents = new Targets(callGraph.edgesInto(m));
 
 		if (itParents != null) {
-			while(itParents.hasNext()){
+			while (itParents.hasNext()) {
 				SootMethod sm = (SootMethod) itParents.next();
-				if(sm != null){
-					//System.out.println("sm is null");
-					if(!visited.contains(sm.getSignature())){
-						visit(cg,sm);
+				if (sm != null) {
+					// System.out.println("sm is null");
+					if (!visited.contains(sm.getSignature())) {
+						visit(cg, sm);
 					}
 				}
 			}
@@ -127,10 +132,32 @@ public class Setup {
 		String label = callGraph.listener().toString();
 
 		System.out.println(label);
+
 		visit(callGraph, entryPoint);
 		dg.setEntryPoint(entryPoint.getName());
-		dg.plot("plot"+dg.DOT_EXTENSION);
+		dg.plot("plot" + dg.DOT_EXTENSION);
+
+		MyCallGraph myCG = new MyCallGraph(callGraph);
+		myCG.setEntry(entryPoint);
+
+		myCG.createMyCG();
+		myCG.findExits();
+
+		int point = 0;
+		for (int i = 0; i < myCG.getNodes().size(); i++) {
+			if (myCG.getNodes().get(i).getSootMethod().getSignature().equals("<com.example.negar.toyapp.MainActivity: void onCreate(android.os.Bundle)>")){
+				System.out.println(myCG.getNodes().get(i).getSootMethod().getSignature() + " == " + i);
+				point = i;
+			}
+			
+		}
+		System.out.println(myCG.getNodes().get(point).extractWorkflowsFromMainMethod());
+
+		// createMyCallGraph(myCG.getEntry(), myCG);
+
 	}
+
+
 
 	public void setInputs() {
 		ArrayList<File> files = new ArrayList<>();
@@ -147,8 +174,7 @@ public class Setup {
 					continue;
 				System.out.println(line);
 				SootClass sc = Scene.v().loadClassAndSupport(line);
-				// System.out.println("hello");
-				// if(sc.getName().startsWith("android))
+
 				allMethods.addAll(sc.getMethods());
 				sc.setApplicationClass();
 				classes.add(sc);

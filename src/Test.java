@@ -9,10 +9,6 @@ import org.xmlpull.v1.XmlPullParserException;
 
 
 
-import soot.Scene;
-import soot.SootClass;
-import soot.options.Options;
-
 public class Test {
 	public static void main(String[] args) throws IOException, XmlPullParserException {
 
